@@ -1,0 +1,43 @@
+Name: Workflow_19e5
+SchemaVersion: "1.0"
+
+# Optional - Set automatic triggers.
+Triggers:
+  - Type: PULLREQUEST
+    Branches:
+      - main
+    Events:
+      - OPEN
+
+# Required - Define action configurations.
+Actions:
+  Build_09:
+    # Identifies the action. Do not modify this value.
+    Identifier: aws/build@v1.0.0
+    # Specifies the source and/or artifacts to pass to the action as input.
+    Inputs:
+      # Optional
+      Sources:
+        - WorkflowSource # This specifies that the action requires this Workflow as a source
+    Outputs:
+      # Optional; Automatically discover reports for popular test frameworks
+      AutoDiscoverReports:
+        Enabled: true
+        # Use as prefix for the report files
+        ReportNamePrefix: rpt
+      Artifacts:
+        - Name: build
+          Files:
+            - build/**/*
+    # Defines the action's properties.
+    Configuration:
+      # Required - Steps are sequential instructions that run shell commands
+      Steps:
+        - Run: npm install
+        - Run: npm test -- --coverage --watchAll=false --testResultsProcessor="jest-junit"
+        - Run: npm run build
+      Container:
+        Registry: CODECATALYST
+        Image: CodeCatalystLinux_x86_64:2024_03
+    Compute:
+      Type: EC2
